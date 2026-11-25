@@ -34,7 +34,9 @@ small{color:#777}
 <div id="app" style="display:none">
 <div class="card">
 <h2 id="welcome"></h2>
-<button class="secondary" onclick="logout()">Log Out</button><h3>My Profile Photo</h3>
+<button class="secondary" onclick="logout()">Log Out</button><h3>My Profile Photo</h3><input type="text" id="fullName" placeholder="Your full name">
+<textarea id="bio" placeholder="Write your bio"></textarea>
+<button onclick="updateProfile()">Save Profile</button>
 <input type="file" id="avatarFile" accept="image/*">
 <button onclick="uploadAvatar()">Upload Profile Photo</button>
 <img id="avatarPreview" width="120" style="border-radius:50%;display:none;">
@@ -151,6 +153,21 @@ async function loadPosts(){
   div.append(name,content,date);
   feed.appendChild(div);
  }
+}async function updateProfile(){
+ const fullName=document.getElementById('fullName').value.trim();
+ const bio=document.getElementById('bio').value.trim();
+
+ const {error}=await db.from('profiles').update({
+  full_name:fullName,
+  bio:bio
+ }).eq('id',currentUser.id);
+
+ if(error){
+  alert(error.message);
+  return;
+ }
+
+ alert("Profile updated successfully!");
 }
 async function uploadAvatar(){
  const file=document.getElementById('avatarFile').files[0];
