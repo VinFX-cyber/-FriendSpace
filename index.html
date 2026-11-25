@@ -1,29 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FriendSpace</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FriendSpace</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--blue:#2878f0;--light:#f2f5fa;--ink:#182230;--muted:#6b7280;--card:#fff}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--light);color:var(--ink)}header{background:#fff;position:sticky;top:0;z-index:5;border-bottom:1px solid #e5e9f0;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}.logo{font-size:24px;font-weight:800;color:var(--blue);letter-spacing:-1px}.top-actions{display:flex;align-items:center;gap:10px}button{border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--blue);color:white}button.secondary{background:#eaf2ff;color:var(--blue)}button:hover{filter:brightness(.97)}.wrap{max-width:1100px;margin:22px auto;padding:0 14px;display:grid;grid-template-columns:230px minmax(0,1fr) 230px;gap:18px}.panel,.post,.composer{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 12px #162b4510}.sidebar .panel{position:sticky;top:80px}.navitem{display:block;padding:12px;border-radius:10px;color:#344054;text-decoration:none;font-weight:650;margin:3px 0}.navitem.active,.navitem:hover{background:#eaf2ff;color:var(--blue)}.profile-mini{display:flex;gap:10px;align-items:center;margin-bottom:14px}.avatar{width:44px;height:44px;border-radius:50%;background:#dbeafe;display:grid;place-items:center;color:#1d4ed8;font-weight:800;flex-shrink:0}.avatar.big{width:72px;height:72px;font-size:24px}.muted{color:var(--muted);font-size:13px}.feed{min-width:0}.composer h3{margin:0 0 12px}.composer textarea{width:100%;resize:vertical;min-height:88px;border:1px solid #d9e0ea;border-radius:12px;padding:12px;font:inherit;outline-color:var(--blue)}.composer-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}.post{margin-top:15px}.posthead{display:flex;align-items:center;gap:10px}.posthead .details{flex:1}.post p{line-height:1.5;white-space:pre-wrap}.post-actions{display:flex;gap:8px;border-top:1px solid #eef1f5;padding-top:10px}.post-actions button{background:#f1f5f9;color:#465468;flex:1}.post-actions button.liked{background:#eaf2ff;color:var(--blue)}.right h3{margin:0 0 12px}.suggestion{display:flex;align-items:center;gap:9px;margin:12px 0}.suggestion div:nth-child(2){flex:1}.suggestion button{padding:7px 10px}.empty{text-align:center;padding:35px 10px;color:var(--muted)}.hidden{display:none!important}.auth{max-width:430px;margin:60px auto;padding:22px;background:white;border-radius:18px;box-shadow:0 4px 24px #142a4515}.auth h1{color:var(--blue);margin:0}.auth input{width:100%;padding:12px;border:1px solid #d9e0ea;border-radius:11px;margin:9px 0;font:inherit}.auth button{width:100%;margin-top:8px}.auth p{font-size:13px;color:var(--muted)}.profile-view{text-align:center}.profile-view .avatar{margin:0 auto 12px}.footer{font-size:12px;color:var(--muted);line-height:1.5;margin-top:15px}@media(max-width:850px){.wrap{grid-template-columns:190px minmax(0,1fr)}.right{display:none}}@media(max-width:600px){header{padding:10px 12px}.logo{font-size:21px}.wrap{display:block;margin:12px auto}.sidebar{display:none}.auth{margin:25px 12px}.composer,.post{padding:14px}}
-</style></head>
+body{margin:0;font-family:Arial,sans-serif;background:#f0f4f8;color:#222}
+header{background:#1877f2;color:white;padding:18px;text-align:center;font-size:25px;font-weight:bold}
+main{max-width:600px;margin:auto;padding:15px}
+.card{background:white;padding:18px;margin:15px 0;border-radius:12px;box-shadow:0 2px 8px #ddd}
+input,textarea,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ddd;box-sizing:border-box;font-size:16px}
+button{background:#1877f2;color:white;border:none;font-weight:bold;cursor:pointer}
+button.secondary{background:#555}
+.post{background:white;padding:15px;margin:15px 0;border-radius:12px}
+small{color:#777}
+#feed{margin-top:15px}
+</style>
+</head>
 <body>
-<header><div class="logo">FriendSpace</div><div class="top-actions"><span id="headerUser" class="muted"></span><button id="loginBtn" class="secondary" onclick="showAuth()">Log in</button><button id="logoutBtn" class="secondary hidden" onclick="logout()">Log out</button></div></header>
-<div id="auth" class="auth hidden"><h1>Welcome to FriendSpace</h1><p>Join the community and share what's happening.</p><input id="nameInput" placeholder="Your name" autocomplete="name"><input id="emailInput" placeholder="Email address" type="email"><input id="passwordInput" placeholder="Password (demo only)" type="password"><button onclick="signup()">Create account</button><button class="secondary" onclick="hideAuth()">Back to feed</button><p>Demo note: this starter saves your profile and posts only in this browser. It does not use a secure server yet.</p></div>
-<div id="app" class="wrap"><aside class="sidebar"><div class="panel"><div id="miniProfile" class="profile-mini"><div class="avatar">F</div><div><strong>FriendSpace</strong><div class="muted">Your community</div></div></div><a class="navitem active" href="#" onclick="renderFeed();return false">🏠 Home feed</a><a class="navitem" href="#" onclick="showProfile();return false">👤 My profile</a><a class="navitem" href="#" onclick="showAuth();return false">➕ Join FriendSpace</a></div></aside>
-<main class="feed"><div class="composer"><h3>What's on your mind?</h3><textarea id="postInput" placeholder="Share something with your friends..."></textarea><div class="composer-row"><span class="muted">Share a thought with your community</span><button onclick="addPost()">Post</button></div></div><div id="feedPosts"></div></main>
-<aside class="right"><div class="panel"><h3>Welcome to FriendSpace 👋</h3><p class="muted">A place to share, connect and find your community.</p><hr style="border:0;border-top:1px solid #eef1f5"><h3>Community guidelines</h3><p class="muted">Be kind. Respect people's privacy. Report harmful content.</p></div></aside></div>
+<header>🌎 FriendSpace</header>
+<main>
+<div class="card" id="auth">
+<h2>Welcome to FriendSpace</h2>
+<input id="username" placeholder="Username (for sign up)">
+<input id="email" type="email" placeholder="Email address">
+<input id="password" type="password" placeholder="Password">
+<button onclick="signup()">Create Account</button>
+<button class="secondary" onclick="login()">Log In</button>
+<p id="message"></p>
+</div>
+
+<div id="app" style="display:none">
+<div class="card">
+<h2 id="welcome"></h2>
+<button class="secondary" onclick="logout()">Log Out</button>
+</div>
+<div class="card">
+<h3>Create a post</h3>
+<textarea id="postContent" placeholder="What's on your mind?" rows="4"></textarea>
+<button onclick="createPost()">Post</button>
+</div>
+<h2>Community Feed</h2>
+<div id="feed">Loading posts...</div>
+</div>
+</main>
+
 <script>
-const starter=[{id:1,name:'FriendSpace Team',text:'Welcome to FriendSpace! 🎉 This is your new space to share thoughts and connect. Create an account to personalize your profile.',likes:0,liked:false,time:'Welcome post'}];
-let posts=JSON.parse(localStorage.getItem('fs_posts')||'null')||starter;let user=JSON.parse(localStorage.getItem('fs_user')||'null');
-function save(){localStorage.setItem('fs_posts',JSON.stringify(posts))}function initials(n){return (n||'F').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
-function updateHeader(){document.getElementById('headerUser').textContent=user?'Hi, '+user.name:'';document.getElementById('loginBtn').classList.toggle('hidden',!!user);document.getElementById('logoutBtn').classList.toggle('hidden',!user);document.getElementById('miniProfile').innerHTML=user?`<div class="avatar">${initials(user.name)}</div><div><strong>${escapeHtml(user.name)}</strong><div class="muted">Member</div></div>`:`<div class="avatar">F</div><div><strong>FriendSpace</strong><div class="muted">Your community</div></div>`}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderFeed(){document.getElementById('auth').classList.add('hidden');document.getElementById('app').classList.remove('hidden');updateHeader();document.getElementById('feedPosts').innerHTML=posts.slice().reverse().map(p=>`<article class="post"><div class="posthead"><div class="avatar">${initials(p.name)}</div><div class="details"><strong>${escapeHtml(p.name)}</strong><div class="muted">${escapeHtml(p.time||'')}</div></div></div><p>${escapeHtml(p.text)}</p><div class="post-actions"><button class="${p.liked?'liked':''}" onclick="likePost(${p.id})">${p.liked?'♥ Liked':'♡ Like'} · ${p.likes}</button><button onclick="commentPost(${p.id})">💬 Comment</button></div></article>`).join('')}
-function showAuth(){document.getElementById('app').classList.add('hidden');document.getElementById('auth').classList.remove('hidden')}function hideAuth(){renderFeed()}
-function signup(){let n=document.getElementById('nameInput').value.trim(),e=document.getElementById('emailInput').value.trim(),pw=document.getElementById('passwordInput').value;if(!n||!e||!pw){alert('Please fill in all fields.');return}user={name:n,email:e};localStorage.setItem('fs_user',JSON.stringify(user));renderFeed()}
-function logout(){user=null;localStorage.removeItem('fs_user');renderFeed()}
-function addPost(){if(!user){alert('Please create an account or log in first.');showAuth();return}let t=document.getElementById('postInput').value.trim();if(!t)return;posts.push({id:Date.now(),name:user.name,text:t,likes:0,liked:false,time:new Date().toLocaleString()});document.getElementById('postInput').value='';save();renderFeed()}
-function likePost(id){let p=posts.find(x=>x.id===id);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;save();renderFeed()}
-function commentPost(id){alert('Comments are planned for the next version of FriendSpace.');}
-function showProfile(){if(!user){showAuth();return}document.getElementById('feedPosts').innerHTML=`<div class="post profile-view"><div class="avatar big">${initials(user.name)}</div><h2>${escapeHtml(user.name)}</h2><p class="muted">FriendSpace member</p><p>${escapeHtml(user.email)}</p><button class="secondary" onclick="renderFeed()">Back to feed</button></div>`}
-renderFeed();
-</script></body></html>
+const SUPABASE_URL = https://rtkehyswdsztzequfqfj.supabase.co/rest/v1/
+const SUPABASE_KEY = sb_publishable_Ftk2HJc55yRtsGRSQkGA5A_A2JQeHnb
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser = null;
+
+async function signup(){
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ const username=document.getElementById('username').value.trim();
+ if(!username||!email||!password){message("Fill in all fields.");return;}
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{username}}});
+ if(error){message(error.message);return;}
+ if(data.user && data.session){
+  await saveProfile(data.user,username);
+  message("Account created!");
+  showApp(data.user);
+ }else{
+  message("Account created! Check your email to confirm, then log in.");
+ }
+}
+
+async function login(){
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error){message(error.message);return;}
+ currentUser=data.user;
+ await ensureProfile(currentUser);
+ showApp(currentUser);
+}
+
+async function saveProfile(user,username){
+ const {error}=await db.from('profiles').insert({id:user.id,username:username});
+ if(error && !error.message.includes("duplicate"))console.log(error.message);
+}
+
+async function ensureProfile(user){
+ const {data}=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
+ if(!data){
+  const username=user.user_metadata?.username || user.email.split('@')[0];
+  await saveProfile(user,username);
+ }
+}
+
+function showApp(user){
+ currentUser=user;
+ document.getElementById('auth').style.display='none';
+ document.getElementById('app').style.display='block';
+ document.getElementById('welcome').textContent="Welcome to FriendSpace!";
+ loadPosts();
+}
+
+function message(text){
+ document.getElementById('message').textContent=text;
+}
+
+async function createPost(){
+ const content=document.getElementById('postContent').value.trim();
+ if(!content)return alert("Write something first!");
+ const {error}=await db.from('posts').insert({user_id:currentUser.id,content});
+ if(error){alert(error.message);return;}
+ document.getElementById('postContent').value='';
+ loadPosts();
+}
+
+async function loadPosts(){
+ const {data,error}=await db.from('posts').select('*').order('created_at',{ascending:false});
+ if(error){document.getElementById('feed').textContent=error.message;return;}
+ const feed=document.getElementById('feed');
+ feed.innerHTML='';
+ for(const post of data){
+  const {data:profile}=await db.from('profiles').select('username').eq('id',post.user_id).maybeSingle();
+  const div=document.createElement('div');
+  div.className='post';
+  const name=document.createElement('strong');
+  name.textContent=profile?.username || 'FriendSpace user';
+  const content=document.createElement('p');
+  content.textContent=post.content;
+  const date=document.createElement('small');
+  date.textContent=new Date(post.created_at).toLocaleString();
+  div.append(name,content,date);
+  feed.appendChild(div);
+ }
+ if(!data.length)feed.textContent="No posts yet. Be the first to post!";
+}
+
+async function logout(){
+ await db.auth.signOut();
+ currentUser=null;
+ document.getElementById('auth').style.display='block';
+ document.getElementById('app').style.display='none';
+}
+
+db.auth.onAuthStateChange(async(event,session)=>{
+ if(session && !currentUser){
+  currentUser=session.user;
+  showApp(session.user);
+ }
+});
+</script>
+</body>
+</html>
