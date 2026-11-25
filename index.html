@@ -242,9 +242,15 @@ async function addComment(postId,text){
   name.textContent=user.full_name || user.username;
 
   const button=document.createElement('button');
-  button.textContent="Follow";
-  button.onclick=()=>followUser(user.id);
 
+const {data:followCheck}=await db.from('follows')
+ .select('id')
+ .eq('follower_id',currentUser.id)
+ .eq('following_id',user.id)
+ .maybeSingle();
+
+button.textContent=followCheck ? "Following" : "Follow";
+button.onclick=()=>followUser(user.id);
   div.append(name,button);
   results.appendChild(div);
  }
