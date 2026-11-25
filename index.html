@@ -34,7 +34,11 @@ small{color:#777}
 <div id="app" style="display:none">
 <div class="card">
 <h2 id="welcome"></h2>
-<button class="secondary" onclick="logout()">Log Out</button><h3>My Profile Photo</h3><input type="text" id="fullName" placeholder="Your full name">
+<button class="secondary" onclick="logout()">Log Out</button>
+ <h3>My Profile Photo</h3><input type="text" id="fullName" placeholder="Your full name"><h3>Find Friends</h3>
+<input type="text" id="searchUser" placeholder="Search username">
+<button onclick="searchUsers()">Search</button>
+<div id="searchResults"></div>
 <textarea id="bio" placeholder="Write your bio"></textarea>
 <button onclick="updateProfile()">Save Profile</button>
 <input type="file" id="avatarFile" accept="image/*">
@@ -204,6 +208,64 @@ async function addComment(postId,text){
  if(error){alert(error.message);return;}
 
  loadPosts();
+}
+ async function searchUsers(){
+ const term=document.getElementById('searchUser').value.trim();
+ const results=document.getElementById('searchResults');
+ results.innerHTML='';
+
+ if(!term){
+  results.textContent="Enter a username to search.";
+  return;
+ }
+
+ const {data,error}=await db.from('profiles')
+  .select('id,username,full_name')
+  .ilike('username','%'+term+'%')
+  .neq('id',currentUser.id);
+
+ if(error){
+  results.textContent=error.message;
+  return;
+ }
+
+ if(!data.length){
+  results.textContent="No users found.";
+  return;
+ }
+
+ for(const user of data){
+  const div=document.createElement('div');
+  div.className='post';
+
+  const name=document.createElement('strong');
+  name.textContent=user.full_name || user.username;
+
+  const button=document.createElement('button');
+  button.textContent="Follow";
+  button.onclick=()=>followUser(user.id);
+
+  div.append(name,button);
+  results.appendChild(div);
+ }
+}
+
+async function followUser(userId){
+ const {error}=await db.from('follows').insert({
+  follower_id:currentUser.id,
+  following_id:userId
+ });
+
+ if(error){
+  if(error.code==='23505'){
+   alert("You're already following this user.");
+  }else{
+   alert(error.message);
+  }
+  return;
+ }
+
+ alert("User followed successfully! ❤️");
 }
 async function uploadAvatar(){
  const file=document.getElementById('avatarFile').files[0];
