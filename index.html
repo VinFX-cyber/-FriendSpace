@@ -138,36 +138,74 @@ async function createPost(){
 async function loadPosts(){
  const {data,error}=await db.from('posts').select('*').order('created_at',{ascending:false});
  if(error){document.getElementById('feed').textContent=error.message;return;}
+
  const feed=document.getElementById('feed');
  feed.innerHTML='';
+
  for(const post of data){
   const {data:profile}=await db.from('profiles').select('username').eq('id',post.user_id).maybeSingle();
+  const {data:likes}=await db.from('likes').select('id').eq('post_id',post.id);
+  const {data:comments}=await db.from('comments').select('*').eq('post_id',post.id).order('created_at',{ascending:true});
+
   const div=document.createElement('div');
   div.className='post';
+
   const name=document.createElement('strong');
   name.textContent=profile?.username || 'FriendSpace user';
+
   const content=document.createElement('p');
   content.textContent=post.content;
+
   const date=document.createElement('small');
   date.textContent=new Date(post.created_at).toLocaleString();
-  div.append(name,content,date);
+
+  const likeButton=document.createElement('button');
+  likeButton.textContent="❤️ Like ("+(likes?.length || 0)+")";
+  likeButton.onclick=()=>toggleLike(post.id);
+
+  const commentBox=document.createElement('input');
+  commentBox.placeholder="Write a comment...";
+
+  const commentButton=document.createElement('button');
+  commentButton.textContent="Comment";
+  commentButton.onclick=()=>addComment(post.id,commentBox.value);
+
+  const commentList=document.createElement('div');
+  for(const comment of (comments || [])){
+   const {data:commentProfile}=await db.from('profiles').select('username').eq('id',comment.user_id).maybeSingle();
+   const p=document.createElement('p');
+   p.textContent=(commentProfile?.username || 'User')+": "+comment.content;
+   commentList.appendChild(p);
+  }
+
+  div.append(name,content,date,likeButton,commentBox,commentButton,commentList);
   feed.appendChild(div);
  }
-}async function updateProfile(){
- const fullName=document.getElementById('fullName').value.trim();
- const bio=document.getElementById('bio').value.trim();
+}
 
- const {error}=await db.from('profiles').update({
-  full_name:fullName,
-  bio:bio
- }).eq('id',currentUser.id);
+async function toggleLike(postId){
+ const {data}=await db.from('likes').select('id').eq('post_id',postId).eq('user_id',currentUser.id).maybeSingle();
 
- if(error){
-  alert(error.message);
-  return;
+ if(data){
+  const {error}=await db.from('likes').delete().eq('id',data.id);
+  if(error){alert(error.message);return;}
+ }else{
+  const {error}=await db.from('likes').insert({post_id:postId,user_id:currentUser.id});
+  if(error){alert(error.message);return;}
  }
+ loadPosts();
+}
 
- alert("Profile updated successfully!");
+async function addComment(postId,text){
+ const content=text.trim();
+ if(!content){alert("Write a comment first.");return;}
+
+ const {error}=await db.from('comments').insert({post_id:postId,user_id:currentUser.id,content});
+ if(error){alert(error.message);return;}
+
+ loadPosts();
+}
+
 }
 async function uploadAvatar(){
  const file=document.getElementById('avatarFile').files[0];
