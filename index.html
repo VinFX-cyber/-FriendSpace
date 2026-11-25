@@ -93,12 +93,64 @@ async function ensureProfile(user){
   await saveProfile(user,username);
  }
 }
+async function loadAvatar(){
+ const {data,error}=await db
+  .from('profiles')
+  .select('avatar_url')
+  .eq('id',currentUser.id)
+  .maybeSingle();
 
-function showApp(user){
+ if(error){
+  console.log(error.message);
+  return;
+ }
+
+ if(data && data.avatar_url){
+  const preview=document.getElementById('avatarPreview');
+  preview.src=data.avatar_url;
+  preview.style.display='block';
+ }
+}
+async function loadAvatar(){
+ const {data,error}=await db
+  .from('profiles')
+  .select('avatar_url')
+  .eq('id',currentUser.id)
+  .maybeSingle();
+
+ if(error){
+  console.log(error.message);
+  return;
+ }
+
+ if(data && data.avatar_url){
+  const preview=document.getElementById('avatarPreview');
+  preview.src=data.avatar_url;
+  preview.style.display='block';
+ }async function loadAvatar(){
+ const {data,error}=await db
+  .from('profiles')
+  .select('avatar_url')
+  .eq('id',currentUser.id)
+  .maybeSingle();
+
+ if(error){
+  console.log(error.message);
+  return;
+ }
+
+ if(data && data.avatar_url){
+  const preview=document.getElementById('avatarPreview');
+  preview.src=data.avatar_url;
+  preview.style.display='block';
+ }
+}
+}function showApp(user){
  currentUser=user;
  document.getElementById('auth').style.display='none';
  document.getElementById('app').style.display='block';
  document.getElementById('welcome').textContent="Welcome to FriendSpace!";
+ loadAvatar();
  loadPosts();
 }
 
