@@ -34,7 +34,10 @@ small{color:#777}
 <div id="app" style="display:none">
 <div class="card">
 <h2 id="welcome"></h2>
-<button class="secondary" onclick="logout()">Log Out</button>
+<button class="secondary" onclick="logout()">Log Out</button><h3>My Profile Photo</h3>
+<input type="file" id="avatarFile" accept="image/*">
+<button onclick="uploadAvatar()">Upload Profile Photo</button>
+<img id="avatarPreview" width="120" style="border-radius:50%;display:none;">
 </div>
 <div class="card">
 <h3>Create a post</h3>
@@ -132,7 +135,39 @@ async function loadPosts(){
  }
  if(!data.length)feed.textContent="No posts yet. Be the first to post!";
 }
+async function uploadAvatar(){
+ const file=document.getElementById('avatarFile').files[0];
 
+ if(!file){
+  alert("Please choose a photo first.");
+  return;
+ }
+
+ const filePath=currentUser.id+"/"+Date.now()+"."+file.name.split('.').pop();
+
+ const {error}=await db.storage.from('avatars').upload(filePath,file);
+
+ if(error){
+  alert(error.message);
+  return;
+ }
+
+ const {data}=db.storage.from('avatars').getPublicUrl(filePath);
+ const avatarUrl=data.publicUrl;
+
+ const {error:updateError}=await db.from('profiles').update({avatar_url:avatarUrl}).eq('id',currentUser.id);
+
+ if(updateError){
+  alert(updateError.message);
+  return;
+ }
+
+ const preview=document.getElementById('avatarPreview');
+ preview.src=avatarUrl;
+ preview.style.display='block';
+
+ alert("Profile photo uploaded successfully!");
+}
 async function logout(){
  await db.auth.signOut();
  currentUser=null;
