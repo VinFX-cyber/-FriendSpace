@@ -93,6 +93,7 @@ async function ensureProfile(user){
   await saveProfile(user,username);
  }
 }
+
 async function loadAvatar(){
  const {data,error}=await db
   .from('profiles')
@@ -105,47 +106,13 @@ async function loadAvatar(){
   return;
  }
 
+ const preview=document.getElementById('avatarPreview');
  if(data && data.avatar_url){
-  const preview=document.getElementById('avatarPreview');
   preview.src=data.avatar_url;
   preview.style.display='block';
  }
 }
-async function loadAvatar(){
- const {data,error}=await db
-  .from('profiles')
-  .select('avatar_url')
-  .eq('id',currentUser.id)
-  .maybeSingle();
-
- if(error){
-  console.log(error.message);
-  return;
- }
-
- if(data && data.avatar_url){
-  const preview=document.getElementById('avatarPreview');
-  preview.src=data.avatar_url;
-  preview.style.display='block';
- }async function loadAvatar(){
- const {data,error}=await db
-  .from('profiles')
-  .select('avatar_url')
-  .eq('id',currentUser.id)
-  .maybeSingle();
-
- if(error){
-  console.log(error.message);
-  return;
- }
-
- if(data && data.avatar_url){
-  const preview=document.getElementById('avatarPreview');
-  preview.src=data.avatar_url;
-  preview.style.display='block';
- }
-}
-}function showApp(user){
+ function showApp(user){
  currentUser=user;
  document.getElementById('auth').style.display='none';
  document.getElementById('app').style.display='block';
@@ -153,7 +120,6 @@ async function loadAvatar(){
  loadAvatar();
  loadPosts();
 }
-
 function message(text){
  document.getElementById('message').textContent=text;
 }
@@ -185,7 +151,6 @@ async function loadPosts(){
   div.append(name,content,date);
   feed.appendChild(div);
  }
- if(!data.length)feed.textContent="No posts yet. Be the first to post!";
 }
 async function uploadAvatar(){
  const file=document.getElementById('avatarFile').files[0];
